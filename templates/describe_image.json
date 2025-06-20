@@ -1,0 +1,8 @@
+{
+  "name": "Describe Image (OCR+)",
+  "description": "Describes the content of an image, including any text found.",
+  "api_provider": "gemini",
+  "model": "gemini-1.5-flash",
+  "input_type": "image",
+  "prompt": "You are an expert image analyst. Describe the following image in detail. If there is any text in the image, transcribe it accurately and include it in your description under a 'Text in image:' heading. Provide a comprehensive description of all visual elements."
+}

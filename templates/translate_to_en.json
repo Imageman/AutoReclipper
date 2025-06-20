@@ -1,0 +1,8 @@
+{
+  "name": "Translate to English",
+  "description": "Translates text to English in a polite form.",
+  "api_provider": "gemini",
+  "model": "gemini-1.5-flash",
+  "input_type": "text",
+  "prompt": "You are a professional translator. Translate the following text into English. Use a polite and formal tone. Return only the translated text, without any additional comments or phrases like 'Here is the translation'.\n\nText to translate:\n\"\"\"\n{clipboard_text}\n\"\"\""
+}
