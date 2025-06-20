@@ -22,17 +22,22 @@ class SettingsManager:
         Загружает настройки из JSON-файла.
         Возвращает дефолтные значения, если файл не найден или поврежден.
         """
+        # --- ИСПРАВЛЕНИЕ: Добавлены настройки шрифта по умолчанию ---
+        defaults = {
+            "geometry": "600x700",
+            "last_template": None,
+            "font_family": "Segoe UI",
+            "font_size": 13,
+        }
         try:
             with open(self.filepath, 'r', encoding='utf-8') as f:
                 settings = json.load(f)
-                logger.info(f"Settings loaded successfully from {self.filepath}")
-                return settings
+            logger.info(f"Settings loaded successfully from {self.filepath}")
+            # Дополняем загруженные настройки значениями по умолчанию, если каких-то ключей нет
+            defaults.update(settings)
         except (FileNotFoundError, json.JSONDecodeError) as e:
             logger.warning(f"Could not load settings from {self.filepath}: {e}. Returning defaults.")
-            return {
-                "geometry": "600x700",
-                "last_template": None,
-            }
+        return defaults
 
     def save_settings(self, settings: Dict[str, Any]) -> None:
         """
@@ -73,7 +78,6 @@ class TemplateManager:
                     with open(filepath, 'r', encoding='utf-8') as f:
                         template_data = json.load(f)
                     
-                    # Валидация шаблона
                     if self._is_valid(template_data):
                         name = template_data["name"]
                         self.templates[name] = template_data
@@ -115,7 +119,7 @@ class HistoryManager:
             result_text=result_text,
             timestamp=datetime.now()
         )
-        self.history.appendleft(entry) # Добавляем в начало
+        self.history.appendleft(entry)
         logger.info(f"Added new entry to history for template: {template_name}")
 
     def get_history_display_list(self) -> List[str]:

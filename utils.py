@@ -28,7 +28,8 @@ class HistoryEntry:
         
         source_preview = ""
         if isinstance(self.source_content, str):
-            source_preview = self.source_content[:25].replace('\n', ' ') + '...'
+            # --- ИСПРАВЛЕНИЕ: Длина предпросмотра увеличена до 50 символов ---
+            source_preview = self.source_content[:50].replace('\n', ' ') + '...'
         else: # Предполагаем, что это изображение
             source_preview = "[Image]"
 

@@ -1,0 +1,8 @@
+{
+  "name": "Corrector",
+  "description": "Corrector text.",
+  "api_provider": "gemini",
+  "model": "gemini-1.5-flash",
+  "input_type": "text",
+  "prompt": "You are a professional proofreader. Carefully review the following text and correct all grammar, punctuation, and spelling mistakes. Maintain the original language of the text (English or Russian), preserve its meaning, and use a formal and polite tone appropriate for professional written communication. Return only the corrected version of the text—do not include explanations, comments, or introductory phrases.\n\nText to correct:\n\"\"\"\n{clipboard_text}\n\"\"\""
+}
