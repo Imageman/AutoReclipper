@@ -21,8 +21,13 @@ def setup_logging():
         "<cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>"
     )
     
-    # Логирование в консоль
-    logger.add(sys.stdout, colorize=True, format=log_format, level="INFO")
+    try:
+        # Логирование в консоль
+        logger.add(sys.stdout, colorize=True, format=log_format, level="INFO")
+    except Exception as e:
+        # Эта ошибка может возникнуть, если нет доступной консоли (например, при запуске с pythonw.exe)
+        # Логируем это в файл для отладки, но не прерываем работу.
+        logger.debug(f"Could not add console logger: {e}")
     
     # Логирование в файлы
     logger.add(LOG_FILE, rotation="10 MB", retention="7 days", encoding="utf-8", level="DEBUG", format=log_format)
@@ -31,7 +36,7 @@ def setup_logging():
     logger.info("Logging is configured.")
 
 def main():
-    """Основная функция для запуска приложения."""
+    """Основная функция для запуска приложения. Main application launch function."""
     setup_logging()
 
     # Загрузка переменных окружения
@@ -44,6 +49,7 @@ def main():
         root.withdraw()
         messagebox.showerror(
             "API Key Error",
+            "The GEMINI_API_KEY was not found in the .env file. Please add it and restart the application.\n"
             "GEMINI_API_KEY не найден в файле .env. Пожалуйста, добавьте его и перезапустите приложение."
         )
         root.destroy()

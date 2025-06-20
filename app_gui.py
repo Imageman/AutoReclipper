@@ -109,19 +109,19 @@ class AutoReclipperApp(ctk.CTk):
 
     def _setup_textbox_context_menu(self, textbox: ctk.CTkTextbox):
         context_menu = Menu(textbox, tearoff=0, bg="#2D2D2D", fg="white", activebackground="#555555", activeforeground="white", bd=0, font=(self.app_font.cget("family"), self.app_font.cget("size") - 1))
-        context_menu.add_command(label="Копировать", command=lambda: self._handle_app_copy(textbox))
-        context_menu.add_command(label="Вставить", command=lambda: self._handle_app_paste(textbox))
-        context_menu.add_command(label="Вырезать", command=lambda: self._handle_app_cut(textbox))
+        context_menu.add_command(label="Copy", command=lambda: self._handle_app_copy(textbox))
+        context_menu.add_command(label="Paste", command=lambda: self._handle_app_paste(textbox))
+        context_menu.add_command(label="Cut", command=lambda: self._handle_app_cut(textbox))
         context_menu.add_separator()
-        context_menu.add_command(label="Выделить всё", command=lambda: self._handle_app_select_all(textbox))
+        context_menu.add_command(label="Select all", command=lambda: self._handle_app_select_all(textbox))
 
         def show_context_menu(event):
             disabled = self._is_textbox_disabled(textbox)
             can_paste = bool(pyperclip.paste()) and not disabled
             has_selection = bool(textbox.tag_ranges("sel"))
-            context_menu.entryconfigure("Копировать", state="normal" if has_selection else "disabled")
-            context_menu.entryconfigure("Вырезать", state="normal" if has_selection and not disabled else "disabled")
-            context_menu.entryconfigure("Вставить", state="normal" if can_paste else "disabled")
+            context_menu.entryconfigure("Copy", state="normal" if has_selection else "disabled")
+            context_menu.entryconfigure("Cut", state="normal" if has_selection and not disabled else "disabled")
+            context_menu.entryconfigure("Paste", state="normal" if can_paste else "disabled")
             context_menu.tk_popup(event.x_root, event.y_root)
 
         textbox.bind("<Button-3>", show_context_menu)
