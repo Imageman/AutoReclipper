@@ -17,7 +17,50 @@ class AutoReclipperApp(ctk.CTk):
     """
     Основной класс GUI приложения AutoReclipper.
     """
+
     def __init__(self):
+        super().__init__()
+        logger.info("Initializing AutoReclipperApp GUI.")
+
+        self.title(APP_NAME)
+        self.protocol("WM_DELETE_WINDOW", self.on_closing)
+
+        # --- Инициализация менеджеров и сервисов ---
+        self.settings_manager = SettingsManager()
+        self.template_manager = TemplateManager()
+        self.history_manager = HistoryManager()
+        self.llm_service = LLMService()
+        self.sound_service = SoundService()
+
+        self.current_content: Optional[str | Image.Image] = None
+        self.processing_thread: Optional[threading.Thread] = None
+        self.app_font: Optional[ctk.CTkFont] = None
+
+        # --- ИСПРАВЛЕНИЕ: Изменен порядок вызовов ---
+
+        # 1. Сначала загружаем настройки (особенно шрифт, он нужен для создания виджетов)
+        self.load_state()
+
+        # 2. Затем создаем UI с использованием загруженного шрифта
+        self._setup_ui()
+
+        # 3. После создания UI, применяем к нему остальные настройки (последний пресет)
+        self.apply_loaded_settings()
+
+        # 4. Настраиваем горячие клавиши
+        self._setup_app_level_bindings()
+
+        # --- Фоновые задачи ---
+        self.task_queue = queue.Queue()
+        self.clipboard_monitor = ClipboardMonitor(self.task_queue)
+        self.clipboard_monitor.start()
+        self.hotkey_listener = HotkeyListener(GLOBAL_HOTKEY, lambda: self.task_queue.put(("TOGGLE_VISIBILITY", None)))
+        self.hotkey_listener.start()
+
+        self.after(100, self.check_task_queue)
+        logger.info("GUI initialization complete.")
+
+    def deprecated__init__(self):
         super().__init__()
         logger.info("Initializing AutoReclipperApp GUI.")
 
@@ -278,6 +321,7 @@ class AutoReclipperApp(ctk.CTk):
         self.execute_button.configure(text="Processing..." if state == "disabled" else "Execute")
 
     def save_state(self):
+        """Сохраняет текущее состояние окна и настроек."""
         settings = {
             "geometry": self.geometry(),
             "last_template": self.template_combo.get(),
@@ -288,30 +332,36 @@ class AutoReclipperApp(ctk.CTk):
         logger.info("Application state saved.")
 
     def load_state(self):
-        settings = self.settings_manager.load_settings()
-        self.geometry(settings.get("geometry", "600x700"))
-        font_family, font_size = settings.get("font_family"), settings.get("font_size")
+        """Загружает настройки из файла, в основном для шрифта и геометрии."""
+        self.settings = self.settings_manager.load_settings()  # Сохраняем настройки в self
+        self.geometry(self.settings.get("geometry", "600x700"))
+
+        font_family, font_size = self.settings.get("font_family"), self.settings.get("font_size")
         try:
             if not isinstance(font_family, str) or not font_family: raise ValueError
             font_size = int(font_size)
             if font_size <= 0: raise ValueError
         except (ValueError, TypeError):
-            logger.warning("Invalid font settings found, falling back to defaults.")
+            logger.warning(f"Invalid font settings found, falling back to defaults.")
             font_family, font_size = "Segoe UI", 13
+
         self.app_font = ctk.CTkFont(family=font_family, size=font_size)
         logger.info(f"Application font set to: {font_family}, {font_size}pt")
-        if hasattr(self, 'template_combo'):
-            last_template = settings.get("last_template")
-            if last_template and last_template in self.template_manager.get_template_names():
-                self.template_combo.set(last_template)
-            elif self.template_manager.get_template_names():
-                self.template_combo.set(self.template_manager.get_template_names()[0])
-        logger.info("Application state loaded.")
+
+    def apply_loaded_settings(self):
+        """Применяет загруженные настройки к уже созданным виджетам."""
+        last_template = self.settings.get("last_template")
+        if last_template and last_template in self.template_manager.get_template_names():
+            self.template_combo.set(last_template)
+        elif self.template_manager.get_template_names():
+            self.template_combo.set(self.template_manager.get_template_names()[0])
+
+        logger.info("Loaded settings applied to UI.")
 
     def on_closing(self):
+        """Обработчик закрытия окна."""
         logger.info("Close window event detected.")
         self.save_state()
-        # --- ИЗМЕНЕНО: Останавливаем оба монитора ---
         self.clipboard_monitor.stop()
         self.hotkey_listener.stop()
         self.destroy()
