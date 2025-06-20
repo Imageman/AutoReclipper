@@ -5,62 +5,20 @@ from typing import Optional, Any
 
 import customtkinter as ctk
 from loguru import logger
-from PIL import Image, ImageGrab
+from PIL import Image, ImageDraw, ImageFont
 import pyperclip
+from pystray import Icon as TrayIcon, MenuItem as TrayItem
 
 from managers import SettingsManager, TemplateManager, HistoryManager
 from services import LLMService, SoundService
-from background import ClipboardMonitor, HotkeyListener # Возвращаем оба класса
+from background import ClipboardMonitor, HotkeyListener
 from utils import APP_NAME, GLOBAL_HOTKEY
 
 class AutoReclipperApp(ctk.CTk):
     """
     Основной класс GUI приложения AutoReclipper.
     """
-
     def __init__(self):
-        super().__init__()
-        logger.info("Initializing AutoReclipperApp GUI.")
-
-        self.title(APP_NAME)
-        self.protocol("WM_DELETE_WINDOW", self.on_closing)
-
-        # --- Инициализация менеджеров и сервисов ---
-        self.settings_manager = SettingsManager()
-        self.template_manager = TemplateManager()
-        self.history_manager = HistoryManager()
-        self.llm_service = LLMService()
-        self.sound_service = SoundService()
-
-        self.current_content: Optional[str | Image.Image] = None
-        self.processing_thread: Optional[threading.Thread] = None
-        self.app_font: Optional[ctk.CTkFont] = None
-
-        # --- ИСПРАВЛЕНИЕ: Изменен порядок вызовов ---
-
-        # 1. Сначала загружаем настройки (особенно шрифт, он нужен для создания виджетов)
-        self.load_state()
-
-        # 2. Затем создаем UI с использованием загруженного шрифта
-        self._setup_ui()
-
-        # 3. После создания UI, применяем к нему остальные настройки (последний пресет)
-        self.apply_loaded_settings()
-
-        # 4. Настраиваем горячие клавиши
-        self._setup_app_level_bindings()
-
-        # --- Фоновые задачи ---
-        self.task_queue = queue.Queue()
-        self.clipboard_monitor = ClipboardMonitor(self.task_queue)
-        self.clipboard_monitor.start()
-        self.hotkey_listener = HotkeyListener(GLOBAL_HOTKEY, lambda: self.task_queue.put(("TOGGLE_VISIBILITY", None)))
-        self.hotkey_listener.start()
-
-        self.after(100, self.check_task_queue)
-        logger.info("GUI initialization complete.")
-
-    def deprecated__init__(self):
         super().__init__()
         logger.info("Initializing AutoReclipperApp GUI.")
 
@@ -77,22 +35,20 @@ class AutoReclipperApp(ctk.CTk):
         self.current_content: Optional[str | Image.Image] = None
         self.processing_thread: Optional[threading.Thread] = None
         self.app_font: Optional[ctk.CTkFont] = None
+        
+        # --- ИЗМЕНЕНИЕ: Атрибуты для иконки в трее ---
+        self.tray_icon: Optional[TrayIcon] = None
+        self.tray_icon_thread: Optional[threading.Thread] = None
 
-        # --- Загрузка состояния и настройка шрифтов ---
         self.load_state()
-
-        # --- Настройка UI (использует уже созданный шрифт) ---
         self._setup_ui()
-
-        # --- Настройка глобальных для окна горячих клавиш ---
+        self.apply_loaded_settings()
         self._setup_app_level_bindings()
 
         # --- Фоновые задачи ---
         self.task_queue = queue.Queue()
-        # --- ИЗМЕНЕНО: Возвращаем раздельную архитектуру ---
         self.clipboard_monitor = ClipboardMonitor(self.task_queue)
         self.clipboard_monitor.start()
-        # Для callback в pynput лучше использовать lambda, чтобы избежать проблем с self
         self.hotkey_listener = HotkeyListener(GLOBAL_HOTKEY, lambda: self.task_queue.put(("TOGGLE_VISIBILITY", None)))
         self.hotkey_listener.start()
         
@@ -226,9 +182,52 @@ class AutoReclipperApp(ctk.CTk):
             self.clipboard_textbox_frame.grid()
             self.accordion_button.configure(text="Clipboard Input ▼")
 
+    # --- ИЗМЕНЕНИЕ: Полностью новая логика для работы с треем ---
     def toggle_visibility(self):
-        if self.state() == "normal": self.withdraw()
-        else: self.deiconify(); self.lift(); self.focus_force()
+        """Переключает видимость окна между нормальным состоянием и иконкой в трее."""
+        if self.state() == "withdrawn" or self.tray_icon:
+            self.show_from_tray()
+        else:
+            self.hide_to_tray()
+
+    def hide_to_tray(self):
+        """Скрывает окно и показывает иконку в трее."""
+        self.withdraw()
+        if not self.tray_icon:
+            logger.info("Hiding window to system tray.")
+            image = self._create_tray_icon_image()
+            menu = (TrayItem('Показать', self.show_from_tray, default=True), TrayItem('Выход', self.on_closing))
+            self.tray_icon = TrayIcon(APP_NAME, image, APP_NAME, menu)
+            self.tray_icon_thread = threading.Thread(target=self.tray_icon.run, daemon=True)
+            self.tray_icon_thread.start()
+
+    def show_from_tray(self):
+        """Показывает окно и убирает иконку из трея."""
+        if self.tray_icon:
+            logger.info("Showing window from system tray.")
+            self.tray_icon.stop()
+            self.tray_icon = None
+            self.tray_icon_thread = None
+        
+        self.after(100, self._restore_window_state)
+
+    def _restore_window_state(self):
+        """Восстанавливает нормальное состояние окна."""
+        self.deiconify()
+        self.lift()
+        self.focus_force()
+
+    def _create_tray_icon_image(self) -> Image.Image:
+        """Создает простое изображение для иконки в трее на лету."""
+        width, height = 64, 64
+        image = Image.new('RGB', (width, height), color = 'black')
+        draw = ImageDraw.Draw(image)
+        try:
+            font = ImageFont.truetype("seguisb.ttf", 50)
+        except IOError:
+            font = ImageFont.load_default()
+        draw.text((15, 0), "A", fill="white", font=font)
+        return image
 
     def update_ui_for_content(self, content: Any) -> None:
         self.current_content = content
@@ -286,8 +285,9 @@ class AutoReclipperApp(ctk.CTk):
             task_type, data = self.task_queue.get_nowait()
             logger.debug(f"Got task from queue: {task_type}")
             if task_type == "EXECUTE_FROM_CLIPBOARD":
-                self.update_ui_for_content(data)
-                self.on_execute_button_click()
+                self.show_from_tray() # Показываем окно перед выполнением
+                self.after(150, lambda: self.update_ui_for_content(data))
+                self.after(200, self.on_execute_button_click)
             elif task_type == "PROCESSING_COMPLETE":
                 self._handle_processing_complete(data)
             elif task_type == "TOGGLE_VISIBILITY":
@@ -321,7 +321,6 @@ class AutoReclipperApp(ctk.CTk):
         self.execute_button.configure(text="Processing..." if state == "disabled" else "Execute")
 
     def save_state(self):
-        """Сохраняет текущее состояние окна и настроек."""
         settings = {
             "geometry": self.geometry(),
             "last_template": self.template_combo.get(),
@@ -332,10 +331,8 @@ class AutoReclipperApp(ctk.CTk):
         logger.info("Application state saved.")
 
     def load_state(self):
-        """Загружает настройки из файла, в основном для шрифта и геометрии."""
-        self.settings = self.settings_manager.load_settings()  # Сохраняем настройки в self
+        self.settings = self.settings_manager.load_settings()
         self.geometry(self.settings.get("geometry", "600x700"))
-
         font_family, font_size = self.settings.get("font_family"), self.settings.get("font_size")
         try:
             if not isinstance(font_family, str) or not font_family: raise ValueError
@@ -344,23 +341,22 @@ class AutoReclipperApp(ctk.CTk):
         except (ValueError, TypeError):
             logger.warning(f"Invalid font settings found, falling back to defaults.")
             font_family, font_size = "Segoe UI", 13
-
         self.app_font = ctk.CTkFont(family=font_family, size=font_size)
         logger.info(f"Application font set to: {font_family}, {font_size}pt")
 
     def apply_loaded_settings(self):
-        """Применяет загруженные настройки к уже созданным виджетам."""
         last_template = self.settings.get("last_template")
         if last_template and last_template in self.template_manager.get_template_names():
             self.template_combo.set(last_template)
         elif self.template_manager.get_template_names():
             self.template_combo.set(self.template_manager.get_template_names()[0])
-
         logger.info("Loaded settings applied to UI.")
 
     def on_closing(self):
         """Обработчик закрытия окна."""
         logger.info("Close window event detected.")
+        if self.tray_icon:
+            self.tray_icon.stop()
         self.save_state()
         self.clipboard_monitor.stop()
         self.hotkey_listener.stop()

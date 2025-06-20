@@ -1,5 +1,5 @@
 {
-  "name": "Summarization ",
+  "name": "Summarization",
   "description": "Universal Summarization",
   "api_provider": "gemini",
   "model": "gemini-1.5-flash",
