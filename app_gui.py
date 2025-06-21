@@ -128,15 +128,34 @@ class AutoReclipperApp(ctk.CTk):
         logger.debug(f"Context menu set up for textbox widget: {textbox}")
 
     def _setup_app_level_bindings(self):
-        self.bind_all("<Control-c>", lambda e: self._handle_app_copy())
-        self.bind_all("<Control-C>", lambda e: self._handle_app_copy())
-        self.bind_all("<Control-x>", lambda e: self._handle_app_cut())
-        self.bind_all("<Control-X>", lambda e: self._handle_app_cut())
-        self.bind_all("<Control-v>", lambda e: self._handle_app_paste())
-        self.bind_all("<Control-V>", lambda e: self._handle_app_paste())
-        self.bind_all("<Control-a>", lambda e: self._handle_app_select_all())
-        self.bind_all("<Control-A>", lambda e: self._handle_app_select_all())
-        logger.info("Application-level key bindings have been set up using 'bind_all'.")
+        """Создает глобальные биндинги клавиш и проверяет их успешность."""
+        bindings = {
+            "<Control-c>": self._handle_app_copy,
+            "<Control-C>": self._handle_app_copy,
+            "<Control-x>": self._handle_app_cut,
+            "<Control-X>": self._handle_app_cut,
+            "<Control-v>": self._handle_app_paste,
+            "<Control-V>": self._handle_app_paste,
+            "<Control-a>": self._handle_app_select_all,
+            "<Control-A>": self._handle_app_select_all,
+        }
+
+        self.binding_ids: dict[str, str | None] = {}
+        for sequence, handler in bindings.items():
+            try:
+                bind_id = self.bind_all(sequence, lambda e, h=handler: h())
+                self.binding_ids[sequence] = bind_id
+                if not bind_id:
+                    raise RuntimeError("bind returned empty id")
+            except Exception as e:
+                logger.error(f"Failed to bind hotkey {sequence}: {e}")
+                self.binding_ids[sequence] = None
+
+        failed = [seq for seq, bid in self.binding_ids.items() if not bid]
+        if failed:
+            logger.warning(f"Some key bindings failed: {failed}")
+        else:
+            logger.info("Application-level key bindings successfully set up.")
 
     def _handle_app_copy(self, widget=None):
         focused_widget = widget or self.focus_get()
@@ -197,9 +216,11 @@ class AutoReclipperApp(ctk.CTk):
             logger.info("Hiding window to system tray.")
             image = self._create_tray_icon_image()
             menu = (TrayItem('Показать', self.show_from_tray, default=True), TrayItem('Выход', self.on_closing))
-            self.tray_icon = TrayIcon(APP_NAME, image, APP_NAME, menu)
+            self.tray_icon = TrayIcon(APP_NAME, image, self.title(), menu)
             self.tray_icon_thread = threading.Thread(target=self.tray_icon.run, daemon=True)
             self.tray_icon_thread.start()
+        else:
+            self.tray_icon.title = self.title()
 
     def show_from_tray(self):
         """Показывает окно и убирает иконку из трея."""
@@ -228,6 +249,15 @@ class AutoReclipperApp(ctk.CTk):
             font = ImageFont.load_default()
         draw.text((15, 0), "A", fill="white", font=font)
         return image
+
+    def update_window_title(self, template_name: Optional[str] | None = None) -> None:
+        """Обновляет заголовок окна и, при наличии, подсказку иконки в трее."""
+        if template_name is None:
+            template_name = self.template_combo.get()
+        new_title = f"{template_name} - {APP_NAME}"
+        self.title(new_title)
+        if self.tray_icon:
+            self.tray_icon.title = new_title
 
     def update_ui_for_content(self, content: Any) -> None:
         self.current_content = content
@@ -298,6 +328,7 @@ class AutoReclipperApp(ctk.CTk):
     def on_template_select(self, template_name: str):
         if template := self.template_manager.get_template(template_name):
             logger.info(f"Selected template '{template_name}': {template['description']}")
+        self.update_window_title(template_name)
 
     def on_history_select(self, history_str: str):
         if history_str == "History...": return
@@ -305,6 +336,7 @@ class AutoReclipperApp(ctk.CTk):
             logger.info(f"Restoring state from history entry at {entry.timestamp}.")
             self.update_ui_for_content(entry.source_content)
             self.template_combo.set(entry.template_name)
+            self.update_window_title(entry.template_name)
             self.result_textbox.configure(state="normal")
             self.result_textbox.delete("1.0", "end")
             self.result_textbox.insert("1.0", entry.result_text)
@@ -350,6 +382,7 @@ class AutoReclipperApp(ctk.CTk):
             self.template_combo.set(last_template)
         elif self.template_manager.get_template_names():
             self.template_combo.set(self.template_manager.get_template_names()[0])
+        self.update_window_title()
         logger.info("Loaded settings applied to UI.")
 
     def on_closing(self):
