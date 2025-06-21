@@ -119,7 +119,7 @@ Imagine you are working with legacy code that has comments in a foreign language
 
 **Workflow with AutoReclipper:**
 
-1.  In the AutoReclipper window, select your "Translate to English" preset.
+1.  In the AutoReclipper window, select your "Translate Cyr<->Eng" preset.
 2.  Switch to your code editor.
 3.  Select a comment you want to translate.
 4.  Press `Ctrl+C` twice quickly.
@@ -241,7 +241,7 @@ This workflow is incredibly fast for processing many small, separate pieces of t
 
 **Процесс работы с AutoReclipper:**
 
-1.  В окне AutoReclipper выберите ваш пресет "Перевести на русский".
+1.  В окне AutoReclipper выберите ваш пресет "Translate Cyr<->Eng".
 2.  Переключитесь в ваш редактор кода.
 3.  Выделите комментарий, который хотите перевести.
 4.  Нажмите `Ctrl+C` два раза подряд.
