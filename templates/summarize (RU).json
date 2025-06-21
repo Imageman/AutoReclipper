@@ -1,0 +1,8 @@
+{
+  "name": "Суммаризация",
+  "description": "Universal Summarization",
+  "api_provider": "gemini",
+  "model": "gemini-1.5-flash",
+  "input_type": "text",
+  "prompt": "You are a professional summarizer. Read the following text carefully and write a concise summary of its main points. Keep the meaning accurate and preserve all key ideas. The response must be written in Russian, regardless of the original language of the text, and must contain between 200 and 400 words. Do not include explanations, comments, or introductory phrases—only the summary.\n\nText to summarize:\n\"\"\"\n{clipboard_text}\n\"\"\""
+}
