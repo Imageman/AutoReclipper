@@ -1,5 +1,6 @@
 import queue
 import threading
+import tkinter
 from tkinter import Menu, messagebox
 from typing import Optional, Any
 
@@ -159,39 +160,44 @@ class AutoReclipperApp(ctk.CTk):
 
     def _handle_app_copy(self, widget=None):
         focused_widget = widget or self.focus_get()
-        if isinstance(focused_widget, ctk.CTkTextbox):
+        if isinstance(focused_widget, (ctk.CTkTextbox, tkinter.Text)):
             try:
                 if focused_widget.tag_ranges("sel"):
                     pyperclip.copy(focused_widget.get("sel.first", "sel.last"))
+                    return "break"
             except Exception as e: logger.error(f"Error during copy: {e}")
-        return "break"
+        return None
 
     def _handle_app_paste(self, widget=None):
         focused_widget = widget or self.focus_get()
-        if isinstance(focused_widget, ctk.CTkTextbox):
+        if isinstance(focused_widget, (ctk.CTkTextbox, tkinter.Text)):
             if self._is_textbox_disabled(focused_widget): return "break"
             try:
                 if text := pyperclip.paste():
                     if focused_widget.tag_ranges("sel"): focused_widget.delete("sel.first", "sel.last")
                     focused_widget.insert("insert", text)
+                    return "break"
             except Exception as e: logger.error(f"Error during paste: {e}")
-        return "break"
+        return None
 
     def _handle_app_cut(self, widget=None):
         focused_widget = widget or self.focus_get()
-        if isinstance(focused_widget, ctk.CTkTextbox):
+        if isinstance(focused_widget, (ctk.CTkTextbox, tkinter.Text)):
             if self._is_textbox_disabled(focused_widget): return "break"
             self._handle_app_copy(focused_widget)
             try:
-                if focused_widget.tag_ranges("sel"): focused_widget.delete("sel.first", "sel.last")
+                if focused_widget.tag_ranges("sel"):
+                    focused_widget.delete("sel.first", "sel.last")
+                    return "break"
             except Exception as e: logger.error(f"Error during cut: {e}")
-        return "break"
+        return None
 
     def _handle_app_select_all(self, widget=None):
         focused_widget = widget or self.focus_get()
-        if isinstance(focused_widget, ctk.CTkTextbox):
+        if isinstance(focused_widget, (ctk.CTkTextbox, tkinter.Text) ):
             focused_widget.tag_add("sel", "1.0", "end")
-        return "break"
+            return "break"
+        return None
 
     def toggle_accordion(self):
         if self.clipboard_textbox_frame.winfo_viewable():

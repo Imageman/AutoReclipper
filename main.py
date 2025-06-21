@@ -1,6 +1,5 @@
 import os
 import sys
-import threading
 from tkinter import messagebox
 
 from loguru import logger

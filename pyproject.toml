@@ -1,7 +1,7 @@
 [project]
 name = "autoreclipper"
 version = "0.1.0"
-description = "Add your description here"
+description = "Clipboard automation utility using LLM templates."
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
