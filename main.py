@@ -16,7 +16,7 @@ LOG_ERROR_FILE = "autoreclipper_error.log"
 
 def _ensure_env_file(env_path: str) -> None:
     """Create .env file with placeholder if it is missing or lacks the key."""
-    placeholder = 'GEMINI_API_KEY="YOUR_API_KEY_HERE"\n'
+    placeholder = 'GEMINI_API_KEY=YOUR_API_KEY_HERE\n'
     if not os.path.exists(env_path):
         with open(env_path, "w", encoding="utf-8") as f:
             f.write(placeholder)

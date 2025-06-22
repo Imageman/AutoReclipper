@@ -12,6 +12,7 @@
 <a name="-autoreclipper-en"></a>
 
 ## 🇬🇧 AutoReclipper (English)
+![Скриншот Autoreclipper](./rsc/autoreclipper_screenshot.png)
 
 ### Features
 
@@ -70,7 +71,7 @@ This workflow allows for incredibly fast, in-place text processing.
     *   Create a file named `.env` in the root directory of the project.
     *   Add your Gemini API key to this file:
       ```
-      GEMINI_API_KEY="YOUR_API_KEY_HERE"
+      GEMINI_API_KEY=YOUR_API_KEY_HERE
       ```
 2.  **Application Settings (`settings.json`)**:
     *   This file is created automatically on the first run.
@@ -98,7 +99,7 @@ Each template file must contain the following keys:
 *   `description` (string): A short description of what the template does.
 *   `api_provider` (string): The LLM provider to use. Currently, only `"gemini"` is supported.
 *   `model` (string): The specific model name (e.g., `"gemini-1.5-flash"`).
-*   `input_type` (string): The type of content the template expects. Can be `"text"` or `"image"`.
+*   `input_type` (string): The type of content the template expects. Can be `"text"` or `"image"` (Image mode is currently disabled).
 *   `prompt` (string): The full prompt to be sent to the LLM. Use the placeholder `"{clipboard_text}"` where the clipboard text should be inserted.
 
 **Example: `templates/code_commenter.json`**
@@ -192,7 +193,7 @@ This workflow is incredibly fast for processing many small, separate pieces of t
     *   Создайте файл с именем `.env` в корневой папке проекта.
     *   Добавьте в него ваш API-ключ от Gemini:
       ```
-      GEMINI_API_KEY="ВАШ_API_КЛЮЧ_ЗДЕСЬ"
+      GEMINI_API_KEY=ВАШ_API_КЛЮЧ_ЗДЕСЬ
       ```
 2.  **Настройки приложения (`settings.json`)**:
     *   Этот файл создается автоматически при первом запуске.
