@@ -11,7 +11,7 @@
 
 <a name="-autoreclipper-en"></a>
 
-## 🇬🇧 AutoReclipper (English)
+## AutoReclipper (English)
 ![Скриншот Autoreclipper](./rsc/autoreclipper_screenshot.png)
 
 ### Features
@@ -22,7 +22,7 @@
     *   A dropdown menu for selecting presets (templates).
     *   An editable input field that shows the clipboard content.
     *   A display area for the result.
-    *   A history of the last 20 operations.
+    *   A history dropdown storing the last 20 operations for quick recall.
 *   **System Tray Integration**: Hide the application window to the system tray to keep it running in the background without cluttering your workspace.
 *   **Global Hotkey**: Show or hide the application window from anywhere using a global hotkey (`Ctrl+Shift+Space`).
 *   **Image Support**: Process images directly from the clipboard using vision-capable models like Gemini.
@@ -44,7 +44,7 @@ This workflow allows for incredibly fast, in-place text processing.
 
 ### Installation
 
-1.  **Prerequisites**: Ensure you have Python 3.9+ installed.
+1.  **Prerequisites**: Ensure you have Python 3.9+ installed. This utility currently works only on Windows.
 2.  **Clone the repository**:
     ```bash
     git clone https://github.com/your-username/AutoReclipper.git
@@ -88,6 +88,8 @@ This workflow allows for incredibly fast, in-place text processing.
     *   **Method 2 (Manual)**: Paste or type text into the "Clipboard Input" field and click "Execute".
 4.  **Global Hotkey**: Press `Ctrl+Shift+Space` to hide the window to the system tray or show it again.
 5.  **System Tray**: Right-click the tray icon to "Show" the window or "Exit" the application.
+6. **History Recall**: Use the "History" dropdown to restore previous input and results.
+7.  **Logging**: Application logs are saved to `autoreclipper.log` (errors in `autoreclipper_error.log`).
 
 ### Creating Prompt Templates
 
@@ -134,7 +136,7 @@ This workflow is incredibly fast for processing many small, separate pieces of t
 
 <a name="-autoreclipper-ru"></a>
 
-## 🇷🇺 AutoReclipper (Русский)
+## AutoReclipper (Русский)
 
 ### Возможности
 
@@ -144,7 +146,7 @@ This workflow is incredibly fast for processing many small, separate pieces of t
     *   Выпадающее меню для выбора пресетов (шаблонов).
     *   Редактируемое поле ввода, отображающее содержимое буфера обмена.
     *   Область для вывода результата.
-    *   Историю последних 20 операций.
+    *   Выпадающий список с последними 20 операциями и возможностью их восстановить.
 *   **Интеграция с системным треем**: Скрывайте окно приложения в системный трей, чтобы оно работало в фоне, не загромождая рабочее пространство.
 *   **Глобальная горячая клавиша**: Показывайте или скрывайте окно приложения из любого места с помощью глобальной горячей клавиши (`Ctrl+Shift+Space`).
 *   **Поддержка изображений**: Обрабатывайте изображения прямо из буфера обмена с помощью vision-моделей, таких как Gemini.
@@ -166,7 +168,7 @@ This workflow is incredibly fast for processing many small, separate pieces of t
 
 ### Установка
 
-1.  **Требования**: Убедитесь, что у вас установлен Python 3.9+.
+1.  **Требования**: Убедитесь, что у вас установлен Python 3.9+. Утилита пока работает только в Windows.
 2.  **Клонируйте репозиторий**:
     ```bash
     git clone https://github.com/your-username/AutoReclipper.git
@@ -210,6 +212,8 @@ This workflow is incredibly fast for processing many small, separate pieces of t
     *   **Способ 2 (Вручную)**: Вставьте или напишите текст в поле "Clipboard Input" и нажмите "Execute".
 4.  **Глобальная горячая клавиша**: Нажмите `Ctrl+Shift+Space`, чтобы скрыть окно в трей или показать его снова.
 5.  **Системный трей**: Нажмите правой кнопкой мыши на иконку в трее, чтобы "Показать" окно или "Выйти" из приложения.
+6.  **История**: Используйте список "History" для восстановления предыдущих вводов и результатов.
+7.  **Логи**: Файлы `autoreclipper.log` и `autoreclipper_error.log` сохраняют работу программы и ошибки.
 
 ### Создание шаблонов промптов
 
