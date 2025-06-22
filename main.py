@@ -120,7 +120,7 @@ def main():
     # Загрузка переменных окружения
     load_dotenv()
     api_key = os.getenv("GEMINI_API_KEY")
-    if not api_key or len(api_key) < 50:
+    if not api_key or len(api_key) < 30:
         logger.error("GEMINI_API_KEY not found in environment.")
         env_path = os.path.join(os.getcwd(), ".env")
         _ensure_env_file(env_path)
