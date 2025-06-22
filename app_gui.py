@@ -1,3 +1,4 @@
+import os
 import queue
 import threading
 import tkinter
@@ -7,9 +8,11 @@ from typing import Optional, Any
 import customtkinter as ctk
 from loguru import logger
 from PIL import Image, ImageDraw, ImageFont
+import PIL
 import pyperclip
 from pystray import Icon as TrayIcon, MenuItem as TrayItem
 
+import utils
 from managers import SettingsManager, TemplateManager, HistoryManager
 from services import LLMService, SoundService
 from background import ClipboardMonitor, HotkeyListener
@@ -24,6 +27,8 @@ class AutoReclipperApp(ctk.CTk):
         logger.info("Initializing AutoReclipperApp GUI.")
 
         self.title(APP_NAME)
+        icon_path = os.path.join(utils.RESOURCES_DIR, "icon.ico")  # или icon.png
+        self.iconbitmap(icon_path) # for ico
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
 
         # --- Инициализация менеджеров и сервисов ---

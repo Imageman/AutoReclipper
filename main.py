@@ -39,7 +39,9 @@ def _open_file_default(path: str) -> None:
     """Open a file with the default text editor."""
     try:
         if sys.platform.startswith("win"):
-            os.startfile(path)  # type: ignore[attr-defined]
+            editor_cmd = ["notepad", path]
+            subprocess.run(editor_cmd, check=True)
+            # os.startfile(path)  # type: ignore[attr-defined]
         elif sys.platform.startswith("darwin"):
             subprocess.Popen(["open", path])
         else:
