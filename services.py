@@ -6,6 +6,8 @@ import google.generativeai as genai
 from loguru import logger
 from PIL import Image
 import winsound
+from google.api_core import exceptions
+from google.generativeai.types import RequestOptions
 
 from utils import RESOURCES_DIR
 
@@ -13,11 +15,14 @@ class LLMService:
     """
     Сервис для взаимодействия с API языковых моделей.
     """
+    TIMEOUT_SECONDS = 60
+    RETRY_ATTEMPTS = 3
+
     def __init__(self):
         self.api_key = os.getenv("GEMINI_API_KEY")
         if not self.api_key:
             raise ValueError("GEMINI_API_KEY is not set in environment variables.")
-        
+
         genai.configure(api_key=self.api_key)
         logger.info("LLMService initialized and Gemini API configured.")
 
@@ -45,30 +50,42 @@ class LLMService:
         prompt_template = template["prompt"]
         
         model = genai.GenerativeModel(model_name)
-        
+
         # Формируем промпт
         full_prompt = prompt_template.format(clipboard_text=content if isinstance(content, str) else "")
 
         logger.info(f"Executing request to Gemini model '{model_name}' with input type '{input_type}'.")
 
-        try:
-            if input_type == "text" and isinstance(content, str):
-                response = model.generate_content(full_prompt)
-            elif input_type == "image" and isinstance(content, Image.Image):
-                # Для vision моделей передаем промпт и изображение
-                response = model.generate_content([full_prompt, content])
-            else:
-                logger.error(f"Mismatched input type: template requires '{input_type}' but content is '{type(content).__name__}'.")
-                return f"Error: Template requires {input_type}, but received different content type."
+        for attempt in range(1, self.RETRY_ATTEMPTS + 1):
+            try:
+                request_opts = RequestOptions(timeout=self.TIMEOUT_SECONDS)
+                if input_type == "text" and isinstance(content, str):
+                    response = model.generate_content(full_prompt, request_options=request_opts)
+                elif input_type == "image" and isinstance(content, Image.Image):
+                    # Для vision моделей передаем промпт и изображение
+                    response = model.generate_content([full_prompt, content], request_options=request_opts)
+                else:
+                    logger.error(
+                        f"Mismatched input type: template requires '{input_type}' but content is '{type(content).__name__}'."
+                    )
+                    return f"Error: Template requires {input_type}, but received different content type."
 
-            result_text = response.text.strip()
-            logger.info("Successfully received response from Gemini.")
-            logger.debug(f"Gemini response: {result_text[:100]}...")
-            return result_text
-        
-        except Exception as e:
-            logger.opt(exception=True).error(f"An error occurred while querying Gemini API: {e}")
-            return None
+                result_text = response.text.strip()
+                logger.info("Successfully received response from Gemini.")
+                logger.debug(f"Gemini response: {result_text[:100]}...")
+                return result_text
+
+            except exceptions.DeadlineExceeded:
+                logger.warning(
+                    f"Gemini request timed out after {self.TIMEOUT_SECONDS}s (attempt {attempt}/{self.RETRY_ATTEMPTS})."
+                )
+                if attempt == self.RETRY_ATTEMPTS:
+                    break
+            except Exception as e:
+                logger.opt(exception=True).error(f"An error occurred while querying Gemini API: {e}")
+                break
+
+        return None
 
 class SoundService:
     """
@@ -77,6 +94,7 @@ class SoundService:
     def __init__(self, resource_dir: str = RESOURCES_DIR):
         self.in_sound_path = os.path.join(resource_dir, "in.wav")
         self.out_sound_path = os.path.join(resource_dir, "out.wav")
+        self.fail_sound_path = os.path.join(resource_dir, "fail.wav")
         logger.info("SoundService initialized.")
 
     def _play_sound(self, sound_path: str):
@@ -98,3 +116,8 @@ class SoundService:
         """Воспроизводит звук завершения операции."""
         logger.debug("Playing 'out' sound.")
         self._play_sound(self.out_sound_path)
+
+    def play_fail(self):
+        """Воспроизводит звук неудачной операции."""
+        logger.debug("Playing 'fail' sound.")
+        self._play_sound(self.fail_sound_path)

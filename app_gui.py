@@ -310,6 +310,7 @@ class AutoReclipperApp(ctk.CTk):
         self.set_ui_state("normal")
         self.sound_service.play_out()
         if result_text is None:
+            self.sound_service.play_fail()
             messagebox.showerror("API Error", "Failed to get response from the LLM service. Check logs for details.")
             return
         self.result_textbox.configure(state="normal")
