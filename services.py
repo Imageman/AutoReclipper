@@ -15,7 +15,7 @@ class LLMService:
     """
     Сервис для взаимодействия с API языковых моделей.
     """
-    TIMEOUT_SECONDS = 60
+    TIMEOUT_SECONDS = 15
     RETRY_ATTEMPTS = 3
 
     def __init__(self):
@@ -83,7 +83,8 @@ class LLMService:
                     break
             except Exception as e:
                 logger.opt(exception=True).error(f"An error occurred while querying Gemini API: {e}")
-                break
+                if attempt == self.RETRY_ATTEMPTS:
+                    break
 
         return None
 
