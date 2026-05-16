@@ -1,0 +1,8 @@
+{
+  "name": "Объяснение",
+  "description": "Пояснение термина",
+  "api_provider": "gemini",
+  "model": "models/gemini-2.5-flash-lite",
+  "input_type": "text",
+  "prompt": "You are a professional explainer. Read the following term, concept, company or product name carefully and write a concise, accurate description of what it is, what it does, and how it works. Preserve all key details but do not include any introductory phrases, commentary or opinions—only the factual explanation. The response must be written in Russian.\n\nText to explain:\n\"\"\"\n{clipboard_text}\n\"\"\""
+}

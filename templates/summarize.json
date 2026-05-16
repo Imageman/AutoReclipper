@@ -2,7 +2,7 @@
   "name": "Summarization",
   "description": "Universal Summarization",
   "api_provider": "gemini",
-  "model": "models/gemini-flash-latest",
+  "model": "models/gemini-2.5-flash-lite",
   "input_type": "text",
   "prompt": "You are a professional summarizer. Read the following text carefully and write a concise summary of its main points. Keep the meaning accurate and preserve all key ideas. The response must contain between 200 and 400 words. Do not include explanations, comments, or introductory phrases—only the summary.\n\nText to summarize:\n\"\"\"\n{clipboard_text}\n\"\"\""
 }

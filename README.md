@@ -44,7 +44,7 @@ This workflow allows for incredibly fast, in-place text processing.
 
 ### Installation
 
-1.  **Prerequisites**: Ensure you have Python 3.9+ installed. This utility currently works only on Windows.
+1.  **Prerequisites**: Ensure you have Python 3.11+ installed. This utility currently works only on Windows.
 2.  **Clone the repository**:
     ```bash
     git clone https://github.com/your-username/AutoReclipper.git
@@ -62,18 +62,23 @@ This workflow allows for incredibly fast, in-place text processing.
     ```bash
     pip install -r requirements.txt
     ```
-    The required libraries are: `customtkinter`, `loguru`, `python-dotenv`, `google-generativeai`, `pyperclip`, `Pillow`, `pystray`, `pywin32`, `pynput`.
+    The required libraries are: `customtkinter`, `httpx`, `loguru`, `python-dotenv`, `pyperclip`, `Pillow`, `pystray`, `pywin32`, `pynput`.
 
 ### Configuration
 
-1.  **API Key**:
-    *   This application requires a Google Gemini API key. You can obtain a free key from **[Google AI Studio](https://aistudio.google.com/app/apikey)**.
-    *   Create a file named `.env` in the root directory of the project.
-    *   Add your Gemini API key to this file:
+1.  **Environment file (`.env`)**:
+    *   On first run, the app checks for `GEMINI_API_KEY`. If it is missing, AutoReclipper creates `.env` and prompts you to fill it.
+    *   Create a file named `.env` in the root directory (if it does not exist) and add:
       ```
       GEMINI_API_KEY=YOUR_API_KEY_HERE
       ```
-2.  **Application Settings (`settings.json`)**:
+2.  **LLM API connection (`config.cfg`)**:
+    *   `config.cfg` defines where requests are sent:
+      *   `api_base_url`: base URL of your OpenAI-compatible endpoint (required).
+      *   `api_key`: optional Bearer token for this endpoint.
+      *   `default_model`: model used when selected template model is overridden.
+      *   `thinking_mode` and `gpt_oss_settings`: reasoning mode options used by the request payload.
+3.  **Application Settings (`settings.json`)**:
     *   This file is created automatically on the first run.
     *   You can manually edit it to change the window geometry, last used template, and font settings (`font_family`, `font_size`).
 
@@ -81,7 +86,7 @@ This workflow allows for incredibly fast, in-place text processing.
 
 1.  **Run the application**:
     *   For development (with a console window): `python main.py`
-    *   For regular use (without a console window): `pythonw main.pyw` (rename `main.py` to `main.pyw`).
+    *   For regular use (without a console window): `pythonw main.py`
 2.  **Select a preset** from the top-left dropdown menu.
 3.  **Trigger an action**:
     *   **Method 1 (Double Copy)**: Copy the same text twice from any application.
@@ -99,7 +104,7 @@ Each template file must contain the following keys:
 
 *   `name` (string): The name that will appear in the dropdown menu (e.g., "Translate to Japanese").
 *   `description` (string): A short description of what the template does.
-*   `api_provider` (string): The LLM provider to use. Currently, only `"gemini"` is supported.
+*   `api_provider` (string): The LLM provider to use. Supported values: `"gemini"` and `"openai-compatible"`.
 *   `model` (string): The specific model name (e.g., `"gemini-1.5-flash"`).
 *   `input_type` (string): The type of content the template expects. Can be `"text"` or `"image"` (Image mode is currently disabled).
 *   `prompt` (string): The full prompt to be sent to the LLM. Use the placeholder `"{clipboard_text}"` where the clipboard text should be inserted.
@@ -168,7 +173,7 @@ This workflow is incredibly fast for processing many small, separate pieces of t
 
 ### Установка
 
-1.  **Требования**: Убедитесь, что у вас установлен Python 3.9+. Утилита пока работает только в Windows.
+1.  **Требования**: Убедитесь, что у вас установлен Python 3.11+. Утилита пока работает только в Windows.
 2.  **Клонируйте репозиторий**:
     ```bash
     git clone https://github.com/your-username/AutoReclipper.git
@@ -186,18 +191,23 @@ This workflow is incredibly fast for processing many small, separate pieces of t
     ```bash
     pip install -r requirements.txt
     ```
-    Необходимые библиотеки: `customtkinter`, `loguru`, `python-dotenv`, `google-generativeai`, `pyperclip`, `Pillow`, `pystray`, `pywin32`, `pynput`.
+    Необходимые библиотеки: `customtkinter`, `httpx`, `loguru`, `python-dotenv`, `pyperclip`, `Pillow`, `pystray`, `pywin32`, `pynput`.
 
 ### Настройка
 
-1.  **API ключ**:
-    *   Для работы приложения необходим API-ключ от Google Gemini. Вы можете бесплатно получить его в **[Google AI Studio](https://aistudio.google.com/app/apikey)**.
-    *   Создайте файл с именем `.env` в корневой папке проекта.
-    *   Добавьте в него ваш API-ключ от Gemini:
+1.  **Файл окружения (`.env`)**:
+    *   При запуске приложение проверяет наличие `GEMINI_API_KEY`. Если ключ отсутствует, AutoReclipper создаст `.env` и попросит заполнить его.
+    *   Создайте файл `.env` в корне проекта (если его нет) и добавьте:
       ```
       GEMINI_API_KEY=ВАШ_API_КЛЮЧ_ЗДЕСЬ
       ```
-2.  **Настройки приложения (`settings.json`)**:
+2.  **Подключение к LLM API (`config.cfg`)**:
+    *   В `config.cfg` задается, куда отправляются запросы:
+      *   `api_base_url`: базовый URL OpenAI-совместимого endpoint (обязателен).
+      *   `api_key`: опциональный Bearer-токен для этого endpoint.
+      *   `default_model`: модель по умолчанию для запросов.
+      *   `thinking_mode` и `gpt_oss_settings`: параметры режима рассуждения в payload.
+3.  **Настройки приложения (`settings.json`)**:
     *   Этот файл создается автоматически при первом запуске.
     *   Вы можете редактировать его вручную, чтобы изменить геометрию окна, последний использованный шаблон и настройки шрифта (`font_family`, `font_size`).
 
@@ -205,7 +215,7 @@ This workflow is incredibly fast for processing many small, separate pieces of t
 
 1.  **Запустите приложение**:
     *   Для разработки (с окном консоли): `python main.py`
-    *   Для обычного использования (без окна консоли): `pythonw main.pyw` (переименуйте `main.py` в `main.pyw`).
+    *   Для обычного использования (без окна консоли): `pythonw main.py`
 2.  **Выберите пресет** из выпадающего меню в левом верхнем углу.
 3.  **Запустите действие**:
     *   **Способ 1 (Двойное копирование)**: Скопируйте один и тот же текст дважды из любого приложения.
@@ -223,7 +233,7 @@ This workflow is incredibly fast for processing many small, separate pieces of t
 
 *   `name` (строка): Имя, которое будет отображаться в выпадающем меню (например, "Перевести на японский").
 *   `description` (строка): Краткое описание того, что делает шаблон.
-*   `api_provider` (строка): Провайдер LLM. В настоящее время поддерживается только `"gemini"`.
+*   `api_provider` (строка): Провайдер LLM. Поддерживаемые значения: `"gemini"` и `"openai-compatible"`.
 *   `model` (строка): Конкретное имя модели (например, `"gemini-1.5-flash"`).
 *   `input_type` (строка): Тип контента, который ожидает шаблон. Может быть `"text"` или `"image"`.
 *   `prompt` (строка): Полный промпт, который будет отправлен в LLM. Используйте плейсхолдер `"{clipboard_text}"` в том месте, куда должен быть вставлен текст из буфера обмена.
